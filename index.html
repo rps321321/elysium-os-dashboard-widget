@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elysium Widget</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #0b0d12; font-family: 'Outfit', sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.wrap { 
+  width: 100%; 
+  max-width: 600px;
+  height: auto; 
+  background: rgba(14, 16, 22, 0.7); 
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(42, 42, 56, 0.5); 
+  border-radius: 24px; 
+  overflow: hidden; 
+  position: relative; 
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(201, 168, 76, 0.05);
+  animation: fadeIn 1.2s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+canvas.stars { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.top { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 40px 32px 24px; gap: 8px; }
+.elysium-label { font-size: 11px; font-weight: 500; letter-spacing: 0.5em; color: #c9a84c; text-transform: uppercase; opacity: 0.8; }
+.greeting { font-size: 32px; font-weight: 300; color: #f5f2ee; letter-spacing: 0.02em; }
+.dateline { font-size: 11px; letter-spacing: 0.25em; color: #5a5a75; text-transform: uppercase; margin-top: 4px; }
+.divider-gold { width: 80px; height: 1px; background: linear-gradient(90deg, transparent, #c9a84c88, transparent); margin: 12px auto 0; }
+.bar { position: relative; z-index: 1; display: flex; align-items: stretch; border-top: 1px solid rgba(42, 42, 56, 0.3); background: rgba(255,255,255,0.02); }
+.pill { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px 24px; flex: 1; transition: transform 0.3s ease, background 0.3s ease; cursor: default; }
+.pill:hover { background: rgba(255,255,255,0.03); transform: translateY(-2px); }
+.clock-pill { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px 24px; width: 180px; flex-shrink: 0; border-left: 1px solid rgba(42, 42, 56, 0.3); }
+.sep { width: 1px; background: linear-gradient(180deg, transparent, rgba(42, 42, 58, 0.4), transparent); flex-shrink: 0; }
+.pill-label { font-size: 10px; font-weight: 500; letter-spacing: 0.25em; color: #5a5a75; text-transform: uppercase; text-align: center; margin-bottom: 4px; }
+.pill-main { font-size: 36px; font-weight: 400; color: #ffffff; letter-spacing: 0.01em; line-height: 1; text-align: center; text-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.pill-sub { font-size: 10px; letter-spacing: 0.18em; color: #6b6b8a; text-transform: uppercase; text-align: center; white-space: nowrap; }
+.pill-desc { font-size: 11px; color: #9abce0; letter-spacing: 0.1em; text-align: center; font-weight: 400; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas class="stars" id="starfield"></canvas>
+  <div class="top">
+    <div class="elysium-label">Elysium OS</div>
+    <div class="greeting" id="greeting">Good evening, Raghvendra</div>
+    <div class="dateline" id="dateline"></div>
+    <div class="divider-gold"></div>
+  </div>
+  <div class="bar">
+    <div class="pill">
+      <svg width="36" height="36" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="11" r="5" fill="#c9a84c" opacity="0.9"/>
+        <g stroke="#c9a84c" stroke-width="1" opacity="0.4">
+          <line x1="11" y1="1" x2="11" y2="3.5"/><line x1="11" y1="18.5" x2="11" y2="21"/>
+          <line x1="1" y1="11" x2="3.5" y2="11"/><line x1="18.5" y1="11" x2="21" y2="11"/>
+          <line x1="3.8" y1="3.8" x2="5.6" y2="5.6"/><line x1="16.4" y1="16.4" x2="18.2" y2="18.2"/>
+          <line x1="18.2" y1="3.8" x2="16.4" y2="5.6"/><line x1="5.6" y1="16.4" x2="3.8" y2="18.2"/>
+        </g>
+      </svg>
+      <div class="pill-main" id="temp">--°C</div>
+      <div class="pill-desc" id="condition">Loading...</div>
+      <div class="pill-sub">Niš, Serbia</div>
+    </div>
+    <div class="sep"></div>
+    <div class="pill">
+      <svg width="30" height="30" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2 C10 2 5 8 5 12 a5 5 0 0 0 10 0 C15 8 10 2 10 2Z" fill="none" stroke="#7799bb" stroke-width="1.2" stroke-linejoin="round" opacity="0.8"/>
+        <path d="M7.5 13 a2.5 2.5 0 0 0 5 0" fill="none" stroke="#7799bb" stroke-width="0.8" opacity="0.4"/>
+      </svg>
+      <div class="pill-main" id="humidity" style="color:#8899bb;">--%</div>
+      <div class="pill-sub">Humidity</div>
+    </div>
+    <div class="sep"></div>
+    <div class="clock-pill">
+      <div class="pill-label">Niš, Serbia</div>
+      <svg width="80" height="80" viewBox="0 0 34 34">
+        <circle cx="17" cy="17" r="15" fill="#0d0f14" stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line id="hNis" x1="17" y1="17" x2="17" y2="9" stroke="#c9a84c" stroke-width="1.4" stroke-linecap="round"/>
+        <line id="mNis" x1="17" y1="17" x2="17" y2="5" stroke="#7799bb" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+        <circle cx="17" cy="17" r="1.2" fill="#c9a84c"/>
+      </svg>
+      <div class="pill-main" id="tNis" style="font-size:20px;">--:--</div>
+    </div>
+    <div class="sep"></div>
+    <div class="clock-pill">
+      <div class="pill-label">Gorakhpur, India</div>
+      <svg width="80" height="80" viewBox="0 0 34 34">
+        <circle cx="17" cy="17" r="15" fill="#0d0f14" stroke="#c9a84c" stroke-width="0.5" opacity="0.6"/>
+        <line id="hGor" x1="17" y1="17" x2="17" y2="9" stroke="#c9a84c" stroke-width="1.4" stroke-linecap="round"/>
+        <line id="mGor" x1="17" y1="17" x2="17" y2="5" stroke="#7799bb" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>
+        <circle cx="17" cy="17" r="1.2" fill="#c9a84c"/>
+      </svg>
+      <div class="pill-main" id="tGor" style="font-size:20px;">--:--</div>
+    </div>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+const stars = Array.from({length:100},()=>({
+  x:Math.random(), y:Math.random(), r:Math.random()*0.8+0.2, 
+  o:Math.random(), s:Math.random()*0.02+0.005, dir:Math.random()>0.5?1:-1 
+}));
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  stars.forEach(s=>{
+    s.o += s.s * s.dir;
+    if(s.o > 0.8 || s.o < 0.1) s.dir *= -1;
+    ctx.beginPath(); ctx.arc(s.x*canvas.width,s.y*canvas.height,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${s.o})`; ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+const WMO={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',99:'Thunderstorm'};
+async function fetchWeather(){
+  try{
+    const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.3209&longitude=21.8954&current=temperature_2m,relative_humidity_2m,weathercode&temperature_unit=celsius&timezone=Europe%2FBelgrade');
+    const data=await res.json();
+    const c=data.current;
+    document.getElementById('temp').textContent=Math.round(c.temperature_2m)+'°C';
+    document.getElementById('humidity').textContent=Math.round(c.relative_humidity_2m)+'%';
+    document.getElementById('condition').textContent=WMO[c.weathercode]||'Clear';
+  }catch(e){
+    document.getElementById('condition').textContent='Unavailable';
+  }
+}
+fetchWeather();
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function getTimeParts(tz){
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'numeric',minute:'numeric',second:'numeric',hour12:false}).formatToParts(new Date());
+  const get=t=>+parts.find(p=>p.type===t).value;
+  return{h:get('hour'),m:get('minute'),s:get('second')};
+}
+function rotateHand(id,deg,len){
+  const el=document.getElementById(id); const rad=(deg-90)*Math.PI/180;
+  el.setAttribute('x2',(17+Math.cos(rad)*len).toFixed(2));
+  el.setAttribute('y2',(17+Math.sin(rad)*len).toFixed(2));
+}
+function pad(n){return String(n).padStart(2,'0');}
+function tick(){
+  const now=new Date(); const nis=getTimeParts('Europe/Belgrade'); const gor=getTimeParts('Asia/Kolkata');
+  rotateHand('hNis',(nis.h%12)/12*360+nis.m/60*30,8); rotateHand('mNis',nis.m/60*360+nis.s/60*6,12);
+  rotateHand('hGor',(gor.h%12)/12*360+gor.m/60*30,8); rotateHand('mGor',gor.m/60*360+gor.s/60*6,12);
+  document.getElementById('tNis').textContent=pad(nis.h)+':'+pad(nis.m);
+  document.getElementById('tGor').textContent=pad(gor.h)+':'+pad(gor.m);
+  const h=nis.h;
+  document.getElementById('greeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Raghvendra';
+  document.getElementById('dateline').textContent=DAYS[now.getDay()]+' · '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear()+' · Niš, Serbia';
+}
+tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
