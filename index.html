@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elysium Widget</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { 
+  height: 100%; 
+  background: transparent; 
+  font-family: 'Outfit', sans-serif; 
+  overflow: hidden; 
+}
+.wrap { 
+  width: 100%; 
+  height: 160px; /* 2x height adjustment */
+  background: #191919; 
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2); 
+  overflow: hidden; 
+  position: relative; 
+  display: flex;
+  align-items: center;
+  animation: fadeIn 0.8s ease-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+canvas.stars { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.main-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.elysium-label { font-size: 10px; font-weight: 500; letter-spacing: 0.6em; color: #c9a84c; text-transform: uppercase; opacity: 0.9; }
+.divider-gold-vert { width: 1px; height: 60px; background: linear-gradient(180deg, transparent, #c9a84c55, transparent); }
+.info-cluster { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.greeting { font-size: 24px; font-weight: 300; color: #f5f2ee; letter-spacing: 0.03em; }
+.dateline { font-size: 11px; letter-spacing: 0.2em; color: #5a5a75; text-transform: uppercase; margin-top: 4px; }
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.pill { display: flex; align-items: center; gap: 12px; transition: transform 0.3s ease; cursor: default; }
+.pill:hover { transform: translateY(-2px); }
+.pill-data { display: flex; flex-direction: column; }
+.pill-label { font-size: 10px; font-weight: 500; letter-spacing: 0.2em; color: #5a5a75; text-transform: uppercase; margin-bottom: 4px; }
+.pill-main { font-size: 32px; font-weight: 400; color: #ffffff; letter-spacing: 0.02em; line-height: 1; }
+.pill-desc { font-size: 10px; color: #9abce0; letter-spacing: 0.05em; font-weight: 400; text-transform: uppercase; }
+.sep { width: 1px; height: 48px; background: rgba(42, 42, 58, 0.5); }
+.clock-pill-horiz { display: flex; flex-direction: column; align-items: flex-end; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas class="stars" id="starfield"></canvas>
+  <div class="main-content">
+    <div class="left-section">
+      <div class="brand">
+        <span class="elysium-label">Elysium OS</span>
+        <div class="divider-gold-vert"></div>
+      </div>
+      <div class="info-cluster">
+        <div class="greeting" id="greeting">Good evening, Raghvendra</div>
+        <div class="dateline" id="dateline"></div>
+      </div>
+    </div>
+    
+    <div class="right-section">
+      <!-- Weather -->
+      <div class="pill weather-pill">
+        <svg width="24" height="24" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="5" fill="#c9a84c" opacity="0.9"/>
+          <g stroke="#c9a84c" stroke-width="1" opacity="0.4">
+            <line x1="11" y1="1" x2="11" y2="3.5"/><line x1="11" y1="18.5" x2="11" y2="21"/>
+            <line x1="1" y1="11" x2="3.5" y2="11"/><line x1="18.5" y1="11" x2="21" y2="11"/>
+          </g>
+        </svg>
+        <div class="pill-data">
+          <div class="pill-main" id="temp">--°C</div>
+          <div class="pill-desc" id="condition">Loading...</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Humidity -->
+      <div class="pill humidity-pill">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2 C10 2 5 8 5 12 a5 5 0 0 0 10 0 C15 8 10 2 10 2Z" fill="none" stroke="#7799bb" stroke-width="1.2" stroke-linejoin="round" opacity="0.8"/>
+        </svg>
+        <div class="pill-main" id="humidity" style="color:#8899bb; font-size: 18px;">--%</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Clock 1: Niš -->
+      <div class="pill clock-pill-horiz">
+        <div class="pill-label">Niš</div>
+        <div class="pill-main" id="tNis" style="font-size:20px;">--:--</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Clock 2: Gorakhpur -->
+      <div class="pill clock-pill-horiz">
+        <div class="pill-label">Gorakhpur</div>
+        <div class="pill-main" id="tGor" style="font-size:20px;">--:--</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+const stars = Array.from({length:100},()=>({
+  x:Math.random(), y:Math.random(), r:Math.random()*0.8+0.2, 
+  o:Math.random(), s:Math.random()*0.02+0.005, dir:Math.random()>0.5?1:-1 
+}));
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  stars.forEach(s=>{
+    s.o += s.s * s.dir;
+    if(s.o > 0.8 || s.o < 0.1) s.dir *= -1;
+    ctx.beginPath(); ctx.arc(s.x*canvas.width,s.y*canvas.height,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${s.o})`; ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+const WMO={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Icy fog',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm',99:'Thunderstorm'};
+async function fetchWeather(){
+  try{
+    const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.3209&longitude=21.8954&current=temperature_2m,relative_humidity_2m,weathercode&temperature_unit=celsius&timezone=Europe%2FBelgrade');
+    const data=await res.json();
+    const c=data.current;
+    document.getElementById('temp').textContent=Math.round(c.temperature_2m)+'°C';
+    document.getElementById('humidity').textContent=Math.round(c.relative_humidity_2m)+'%';
+    document.getElementById('condition').textContent=WMO[c.weathercode]||'Clear';
+  }catch(e){
+    document.getElementById('condition').textContent='Unavailable';
+  }
+}
+fetchWeather();
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function getTimeParts(tz){
+  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'numeric',minute:'numeric',second:'numeric',hour12:false}).formatToParts(new Date());
+  const get=t=>+parts.find(p=>p.type===t).value;
+  return{h:get('hour'),m:get('minute'),s:get('second')};
+}
+function pad(n){return String(n).padStart(2,'0');}
+function tick(){
+  const now=new Date(); const nis=getTimeParts('Europe/Belgrade'); const gor=getTimeParts('Asia/Kolkata');
+  document.getElementById('tNis').textContent=pad(nis.h)+':'+pad(nis.m);
+  document.getElementById('tGor').textContent=pad(gor.h)+':'+pad(gor.m);
+  const h=nis.h;
+  document.getElementById('greeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Raghvendra';
+  document.getElementById('dateline').textContent=DAYS[now.getDay()]+' · '+now.getDate()+' '+MONTHS[now.getMonth()]+' '+now.getFullYear()+' · Niš, Serbia';
+}
+tick(); setInterval(tick,1000);
+</script>
+</body>
+</html>
